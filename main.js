@@ -1,5 +1,6 @@
 // Define custom element class
 class SearchDropDown extends HTMLElement {
+    selectElement = null;
     optionsArray = [];
     constructor() {
         // Always call super first in constructor
@@ -21,7 +22,16 @@ class SearchDropDown extends HTMLElement {
         searchInput.setAttribute('type', 'text');
         searchInput.setAttribute('placeholder', 'Search dropdown');
         searchInput.setAttribute('id', 'searchDropDownInput');
-        searchInput.addEventListener('input', this.searchInputValue);
+
+        // Method A: Bind the function ref to 'this' so it has the instance of the class
+        searchInput.addEventListener('input', this.searchInputValue.bind(this));
+
+        /*
+         * Method B: Pass on the reference to selectElement (remember to create selectElement first)
+         * This method creates handles searchInputValue as a factory and only invokes the outer function
+         * on each callback from the 'input' event
+        */
+        //searchInput.addEventListener('input', (e) => this.searchInputValue(e, selectElement));
 
         // Create option label
         const selectLabel = document.createElement('label');
@@ -31,12 +41,12 @@ class SearchDropDown extends HTMLElement {
         selectLabel.innerHTML = 'Select an option';
 
         // Create select elements
-        const selectElement = document.createElement('select');
-        selectElement.setAttribute('name', 'searchableDropDown');
-        selectElement.setAttribute('id', 'searchableDropDown');
-        selectElement.setAttribute('class', 'select');
+        this.selectElement = document.createElement('select');
+        this.selectElement.setAttribute('name', 'searchableDropDown');
+        this.selectElement.setAttribute('id', 'searchableDropDown');
+        this.selectElement.setAttribute('class', 'select');
 
-        // Default value data 
+        // Default value data
         const defaultOptionData = ['Option A', 'Option B', 'Option C', 'Option X', 'Option Z', 'Option M'];
 
         // Automate population of options
@@ -45,7 +55,7 @@ class SearchDropDown extends HTMLElement {
             const optionElement = document.createElement('option');
             optionElement.setAttribute('value', defaultOptionData[i].toLowerCase());
             optionElement.innerText = defaultOptionData[i];
-            selectElement.appendChild(optionElement);
+            this.selectElement.appendChild(optionElement);
             this.optionsArray.push(optionElement);
         }
         this.optionsLength = this.optionsArray.length;
@@ -82,7 +92,7 @@ class SearchDropDown extends HTMLElement {
         // Append children to parent element
         parentElement.appendChild(searchInput);
         parentElement.appendChild(selectLabel);
-        parentElement.appendChild(selectElement);
+        parentElement.appendChild(this.selectElement);
         // attach the created elements to the shadow DOM
         shadow.append(style);
         // console.log(style.isConnected);
@@ -91,18 +101,14 @@ class SearchDropDown extends HTMLElement {
     // Search Drop Down Element methods
     searchInputValue(e) {
         let filter = e.target.value.toUpperCase();
-        // Find the custom element on the page.
-        var customElement = document.getElementsByTagName("searchable-dropdown")[0];
-        // Access the shadowRoot property.
-        const selectElement = customElement.shadowRoot.getElementById("searchableDropDown");
-        // Access options 
-        const optionElements = selectElement.getElementsByTagName("option");
+        // Access options
+        const optionElements = this.selectElement.getElementsByTagName("option");
         // Iterate through options
         for (let i = 0; i < optionElements.length; i++) {
             let optionValue = optionElements[i].value || optionElements[i].innerText;
             if (optionValue.toUpperCase().indexOf(filter) > -1) {
                 optionElements[i].style.display = "";
-                selectElement.options[i].selected = true;
+                this.selectElement.options[i].selected = true;
             } else {
                 optionElements[i].style.display = "none";
             }
