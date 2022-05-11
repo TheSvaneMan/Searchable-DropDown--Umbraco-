@@ -1,6 +1,6 @@
 // Define custom element class
 class SearchDropDown extends HTMLElement {
-    selectElementRef = null;
+    selectElement = null;
     optionsArray = [];
     constructor() {
         // Always call super first in constructor
